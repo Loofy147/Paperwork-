@@ -9,8 +9,9 @@ class PerceptionModule:
     formats and convert them into a structured dictionary that can be used by
     the ReasoningEngine.
     """
-    def __init__(self):
+    def __init__(self, knowledge_base):
         """Initializes the PerceptionModule and loads the spacy model."""
+        self.kb = knowledge_base
         try:
             self.nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
         except OSError:
@@ -59,7 +60,17 @@ class PerceptionModule:
             event_id = f"{state}_{subject}"
             return {"type": "causal_explanation", "event": event_id}
 
-        # Pattern 6: "What would happen to the [target] if it had not [event]?"
+        # Pattern 6: "What happened after the [event]?"
+        match = re.match(r"what happened after the ([\w_]+)\??", text)
+        if match:
+            event_name = match.group(1)
+            # Find the event in the KB that matches the name
+            for node_id, props in self.kb.graph.nodes(data=True):
+                if props.get("name") == event_name and props.get("type") == "event":
+                    return {"type": "temporal_question", "event": node_id}
+            return None # Event not found
+
+        # Pattern 7: "What would happen to the [target] if it had not [event]?"
         match = re.match(r"what would happen to the ([\w\s]+) if it had not ([\w_]+)\??", text)
         if match:
             target_phrase = match.group(1).strip()
@@ -75,5 +86,12 @@ class PerceptionModule:
                     "target_event": target_id
                 }
             }
+
+        # Pattern 8: "plan for [goal]"
+        match = re.match(r"plan for ([\w\s]+)\??", text)
+        if match:
+            goal_phrase = match.group(1).strip()
+            goal_id = goal_phrase.replace(" ", "_")
+            return {"type": "plan", "goal": goal_id}
 
         return None

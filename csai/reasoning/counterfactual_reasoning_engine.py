@@ -43,9 +43,13 @@ class CounterfactualReasoningEngine:
 
         # 2. Apply the intervention to the temporary graph.
         if intervention["type"] == "remove_cause":
-            event_to_remove = intervention["event"]
-            if temp_kb.graph.has_node(event_to_remove):
-                temp_kb.graph.remove_node(event_to_remove)
+            event_name_to_remove = intervention["event"]
+            nodes_to_remove = [
+                node_id for node_id, props in temp_kb.graph.nodes(data=True)
+                if props.get("name") == event_name_to_remove and props.get("type") == "event"
+            ]
+            for node_id in nodes_to_remove:
+                temp_kb.graph.remove_node(node_id)
 
         if time.time() - start_time > deadline:
             return {"outcome": "timeout"}, {"..."}

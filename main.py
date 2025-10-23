@@ -15,12 +15,12 @@ def main():
     print("="*50)
     print(" Welcome to the Causal-Symbolic AI (CSAI) System")
     print("="*50)
-    print("You can ask questions, or teach me new things.")
+    print("You can ask questions, teach me new things, or ask me to plan.")
     print("Example commands:")
     print("  - What color is a raven?")
-    print("  - deadline=1 What is a lion?")
     print("  - learn facts.txt")
     print("  - ground bird in ./images")
+    print("  - plan for dry_grass")
     print("\nType 'exit' to quit.")
     print("-"*50)
 
@@ -46,6 +46,14 @@ def main():
                     concept = ground_match.group(1).strip()
                     image_dir = ground_match.group(2).strip()
                     response = csai.ground(concept, image_dir)
+                    print(response)
+                    continue
+
+                # Check for 'plan' command
+                plan_match = re.match(r"plan for\s+(.*)", user_input, re.IGNORECASE)
+                if plan_match:
+                    goal = plan_match.group(1).strip()
+                    response = csai.plan(goal)
                     print(response)
                     continue
 

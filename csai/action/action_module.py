@@ -5,6 +5,25 @@ class ActionModule:
     This module uses a template-based approach to generate human-readable
     answers from the structured results provided by the ReasoningEngine.
     """
+    def format_plan(self, plan: list) -> str:
+        """
+        Formats a plan into a human-readable string.
+
+        Args:
+            plan (list): A list of action IDs.
+
+        Returns:
+            str: A formatted string representing the plan.
+        """
+        if not plan:
+            return "No plan is needed."
+
+        formatted_plan = "Here is the plan:\n"
+        for i, action_id in enumerate(plan):
+            action_name = action_id.replace("action_", "").replace("_", " ")
+            formatted_plan += f"{i+1}. {action_name}\n"
+        return formatted_plan
+
     def generate_response(self, parsed_query: dict, results: list) -> str:
         """
         Generates a natural language response from a parsed query and a list of results.
@@ -21,10 +40,17 @@ class ActionModule:
         if parsed_query["type"] == "causal_explanation":
             event_name = parsed_query['event'].replace('_', ' ')
             if results:
-                causes = " or ".join([cause.replace('_', ' ') for cause in results])
+                causes = " or ".join(sorted(list(set([cause.replace('_event_1', '').replace('_on', '').replace('_', ' ') for cause in results]))))
                 return f"The {event_name} is caused by {causes}."
             else:
                 return f"I'm sorry, I don't know why the {event_name}."
+
+        if parsed_query["type"] == "temporal_question":
+            if results:
+                event_names = [event.replace("_event_1", "") for event in results]
+                return f"After the {parsed_query['event'].replace('_event_1', '')}, the following events occurred: {', '.join(event_names)}."
+            else:
+                return f"I'm sorry, I don't know what happened after the {parsed_query['event'].replace('_event_1', '')}."
 
         if parsed_query["type"] == "counterfactual":
             intervention = parsed_query["intervention"]
@@ -40,7 +66,7 @@ class ActionModule:
                 return f"If it had not {removed_event}, the {target_event} would not have occurred."
 
             if counterfactual_causes != original_causes:
-                remaining_causes = " or ".join([cause.replace('_', ' ') for cause in sorted(list(counterfactual_causes))])
+                remaining_causes = " or ".join(sorted(list(set([cause.replace('_event_1', '').replace('_on', '').replace('_', ' ') for cause in counterfactual_causes]))))
                 return f"If it had not {removed_event}, the {target_event} would still have occurred, but it would only be caused by {remaining_causes}."
 
             else: # counterfactual_causes == original_causes

@@ -7,6 +7,8 @@ from csai.reasoning.counterfactual_reasoning_engine import CounterfactualReasoni
 from csai.action.action_module import ActionModule
 from csai.learning.knowledge_acquirer import KnowledgeAcquirer
 from csai.grounding.visual_grounder import VisualGrounder
+from csai.reasoning.temporal_reasoning_engine import TemporalReasoningEngine
+from csai.planning.planner import Planner
 
 class CSAISystem:
     """
@@ -24,10 +26,12 @@ class CSAISystem:
                                                  JSON file. Defaults to "knowledge_base.json".
         """
         self.kb = KnowledgeBase()
-        self.perception = PerceptionModule()
+        self.perception = PerceptionModule(self.kb)
         self.reasoning = ReasoningEngine(self.kb)
         self.causal_reasoning = CausalReasoningEngine(self.kb)
         self.counterfactual_reasoning = CounterfactualReasoningEngine(self.kb)
+        self.temporal_reasoning = TemporalReasoningEngine(self.kb)
+        self.planner = Planner(self.kb)
         self.action = ActionModule()
         self.knowledge_acquirer = KnowledgeAcquirer(self.kb)
         self.visual_grounder = VisualGrounder()
@@ -71,11 +75,36 @@ class CSAISystem:
             results, partial_results = self.causal_reasoning.explain_event(parsed_query["event"], deadline)
         elif parsed_query["type"] == "counterfactual":
             results, partial_results = self.counterfactual_reasoning.evaluate(parsed_query["intervention"], deadline)
+        elif parsed_query["type"] == "temporal_question":
+            results = self.temporal_reasoning.find_events_after(parsed_query["event"])
+            partial_results = None
         else:
             results, partial_results = self.reasoning.execute_query(parsed_query, deadline)
 
         parsed_query["partial_results"] = partial_results
         return self.action.generate_response(parsed_query, results)
+
+    def plan(self, goal: str) -> str:
+        """
+        Generates a plan to achieve a given goal.
+
+        Args:
+            goal (str): The goal to achieve.
+
+        Returns:
+            str: A message indicating the plan or the result of the planning process.
+        """
+        # For now, we assume a simple initial state. A more advanced implementation
+        # would perceive the current state of the world.
+        initial_state = {"sprinkler_off"}
+        goal_state = {goal}
+
+        plan = self.planner.find_plan(initial_state, goal_state)
+
+        if plan:
+            return self.action.format_plan(plan)
+        else:
+            return "I'm sorry, I couldn't find a plan to achieve that goal."
 
     def learn(self, file_path: str) -> str:
         """
