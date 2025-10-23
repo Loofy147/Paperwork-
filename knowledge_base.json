@@ -1,0 +1,40 @@
+{
+    "nodes": [
+        {"id": "raven", "properties": {"name": "raven"}},
+        {"id": "crow", "properties": {"name": "crow"}},
+        {"id": "canary", "properties": {"name": "canary"}},
+        {"id": "robin", "properties": {"name": "robin"}},
+        {"id": "bird", "properties": {"name": "bird"}},
+        {"id": "lion", "properties": {"name": "lion"}},
+        {"id": "tiger", "properties": {"name": "tiger"}},
+        {"id": "cat", "properties": {"name": "cat"}},
+        {"id": "dog", "properties": {"name": "dog"}},
+        {"id": "mammal", "properties": {"name": "mammal"}},
+        {"id": "animal", "properties": {"name": "animal"}},
+        {"id": "living_thing", "properties": {"name": "living_thing"}},
+        {"id": "black", "properties": {"name": "black", "type": "color"}},
+        {"id": "yellow", "properties": {"name": "yellow", "type": "color"}},
+        {"id": "orange", "properties": {"name": "orange", "type": "color"}},
+        {"id": "wings", "properties": {"name": "wings", "type": "body_part"}},
+        {"id": "fur", "properties": {"name": "fur", "type": "body_part"}}
+    ],
+    "edges": [
+        {"source": "raven", "target": "bird", "label": "is_a"},
+        {"source": "crow", "target": "bird", "label": "is_a"},
+        {"source": "canary", "target": "bird", "label": "is_a"},
+        {"source": "robin", "target": "bird", "label": "is_a"},
+        {"source": "bird", "target": "animal", "label": "is_a"},
+        {"source": "lion", "target": "cat", "label": "is_a"},
+        {"source": "tiger", "target": "cat", "label": "is_a"},
+        {"source": "cat", "target": "mammal", "label": "is_a"},
+        {"source": "dog", "target": "mammal", "label": "is_a"},
+        {"source": "mammal", "target": "animal", "label": "is_a"},
+        {"source": "animal", "target": "living_thing", "label": "is_a"},
+        {"source": "raven", "target": "black", "label": "has_property"},
+        {"source": "crow", "target": "black", "label": "has_property"},
+        {"source": "canary", "target": "yellow", "label": "has_property"},
+        {"source": "tiger", "target": "orange", "label": "has_property"},
+        {"source": "bird", "target": "wings", "label": "has_part"},
+        {"source": "mammal", "target": "fur", "label": "has_part"}
+    ]
+}
