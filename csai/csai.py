@@ -41,7 +41,7 @@ class CSAISystem:
         for edge in data["edges"]:
             self.kb.add_edge(edge["source"], edge["target"], edge["label"])
 
-    def ask(self, question: str) -> str:
+    def ask(self, question: str, deadline: float = 1.0) -> str:
         """
         Asks a question to the CSAI system.
 
@@ -50,6 +50,7 @@ class CSAISystem:
 
         Args:
             question (str): The natural language question to ask.
+            deadline (float): The maximum time in seconds to spend on the query.
 
         Returns:
             str: The natural language answer.
@@ -58,5 +59,6 @@ class CSAISystem:
         if not parsed_query:
             return "I'm sorry, I don't understand your question."
 
-        results = self.reasoning.execute_query(parsed_query)
+        results, partial_results = self.reasoning.execute_query(parsed_query, deadline)
+        parsed_query["partial_results"] = partial_results
         return self.action.generate_response(parsed_query, results)

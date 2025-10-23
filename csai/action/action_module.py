@@ -18,7 +18,15 @@ class ActionModule:
         """
         subject = parsed_query["subject"]
 
-        if not results:
+        partial_results = parsed_query.get("partial_results")
+
+        if partial_results is not None: # Timeout occurred
+            if partial_results:
+                return f"A {subject} is a type of {', '.join(sorted(list(partial_results)))}."
+            else:
+                return "I started searching, but the deadline was too short to find any results."
+
+        if not results: # No timeout, but no results found
             if parsed_query["type"] == "has_part":
                 return f"No, a {subject} does not have {parsed_query['part']}."
             return "I'm sorry, I don't have an answer to that question."

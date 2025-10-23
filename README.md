@@ -58,6 +58,22 @@ PYTHONPATH=. python3 main.py
 
 You can then type your questions at the prompt. To exit, type `exit`.
 
+You can also specify a timeout for the reasoning process using the `--deadline` flag. For example:
+
+```
+> What is a raven? --deadline=0.001
+```
+
+If the deadline is too short, the system may return a partial result or a message indicating that it timed out. The default deadline is 1.0 second.
+
+## Key Features
+
+### Time-Aware Computing
+
+The CSAI system incorporates **Time-Aware Computing**, one of the missing computational fundamentals discussed in the research paper. This feature allows the system to perform reasoning under time constraints.
+
+When a query is executed, a `deadline` can be specified. If the system cannot find a complete answer within the given timeframe, it will return the best partial result it has found so far, or a message indicating that the deadline was too short to produce a meaningful result. This makes the system more robust and suitable for real-world applications where response time is critical.
+
 ## Running the Tests
 
 The project includes a comprehensive test suite using `pytest`. To run the tests, execute the following command from the root of the project:
