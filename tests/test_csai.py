@@ -50,6 +50,12 @@ def test_new_animal_is_a(csai_system):
     assert "living_thing" in response
     assert "mammal" in response
 
+def test_causal_query(csai_system):
+    response = csai_system.ask("Why is the grass wet?")
+    assert "The wet grass is caused by" in response
+    assert "rain" in response
+    assert "sprinkler" in response
+
 def test_deadline_tight(csai_system):
     response = csai_system.ask("What is a lion?", deadline=0.000001)
     # With a tight deadline, we expect either a partial result or a timeout message.

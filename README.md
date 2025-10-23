@@ -58,6 +58,13 @@ PYTHONPATH=. python3 main.py
 
 You can then type your questions at the prompt. To exit, type `exit`.
 
+You can ask different types of questions, including causal questions:
+
+```
+> Why is the grass wet?
+The wet grass is caused by rain or sprinkler.
+```
+
 You can also specify a timeout for the reasoning process using the `--deadline` flag. For example:
 
 ```
@@ -67,6 +74,10 @@ You can also specify a timeout for the reasoning process using the `--deadline` 
 If the deadline is too short, the system may return a partial result or a message indicating that it timed out. The default deadline is 1.0 second.
 
 ## Key Features
+
+### Causal Reasoning
+
+The system is capable of performing basic causal reasoning to answer "why" questions. It does this by traversing a knowledge graph that contains explicit causal relationships (e.g., "rain" -> "causes" -> "wet grass"). When asked a question like "Why is the grass wet?", the system searches for nodes that have a `causes` relationship with the "wet grass" node and returns them as an explanation.
 
 ### Time-Aware Computing
 

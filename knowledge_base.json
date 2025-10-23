@@ -16,7 +16,14 @@
         {"id": "yellow", "properties": {"name": "yellow", "type": "color"}},
         {"id": "orange", "properties": {"name": "orange", "type": "color"}},
         {"id": "wings", "properties": {"name": "wings", "type": "body_part"}},
-        {"id": "fur", "properties": {"name": "fur", "type": "body_part"}}
+        {"id": "fur", "properties": {"name": "fur", "type": "body_part"}},
+        {"id": "rain", "properties": {"name": "rain", "type": "event"}},
+        {"id": "sprinkler", "properties": {"name": "sprinkler", "type": "event"}},
+        {"id": "wet_grass", "properties": {"name": "wet grass", "type": "state"}},
+        {"id": "wet_sidewalk", "properties": {"name": "wet sidewalk", "type": "state"}},
+        {"id": "water", "properties": {"name": "water", "type": "substance"}},
+        {"id": "sun", "properties": {"name": "sun", "type": "event"}},
+        {"id": "dry_grass", "properties": {"name": "dry grass", "type": "state"}}
     ],
     "edges": [
         {"source": "raven", "target": "bird", "label": "is_a"},
@@ -35,6 +42,12 @@
         {"source": "canary", "target": "yellow", "label": "has_property"},
         {"source": "tiger", "target": "orange", "label": "has_property"},
         {"source": "bird", "target": "wings", "label": "has_part"},
-        {"source": "mammal", "target": "fur", "label": "has_part"}
+        {"source": "mammal", "target": "fur", "label": "has_part"},
+        {"source": "rain", "target": "water", "label": "is_a"},
+        {"source": "sprinkler", "target": "water", "label": "is_a"},
+        {"source": "rain", "target": "wet_grass", "label": "causes"},
+        {"source": "rain", "target": "wet_sidewalk", "label": "causes"},
+        {"source": "sprinkler", "target": "wet_grass", "label": "causes"},
+        {"source": "sun", "target": "dry_grass", "label": "causes"}
     ]
 }

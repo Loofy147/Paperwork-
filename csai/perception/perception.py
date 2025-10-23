@@ -51,4 +51,12 @@ class PerceptionModule:
         if match:
             return {"type": "has_part", "subject": match.group(1), "part": match.group(2)}
 
+        # Pattern 5: "Why is the [Subject] [State]?"
+        match = re.match(r"why is the ([\w_]+) ([\w_]+)\??", text)
+        if match:
+            subject = match.group(1)
+            state = match.group(2)
+            event_id = f"{state}_{subject}"
+            return {"type": "causal_explanation", "event": event_id}
+
         return None

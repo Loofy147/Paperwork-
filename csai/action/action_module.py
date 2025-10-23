@@ -16,7 +16,15 @@ class ActionModule:
         Returns:
             str: A human-readable, natural language response.
         """
-        subject = parsed_query["subject"]
+        subject = parsed_query.get("subject") # Use .get() for safety
+
+        if parsed_query["type"] == "causal_explanation":
+            event_name = parsed_query['event'].replace('_', ' ')
+            if results:
+                causes = " or ".join([cause.replace('_', ' ') for cause in results])
+                return f"The {event_name} is caused by {causes}."
+            else:
+                return f"I'm sorry, I don't know why the {event_name}."
 
         partial_results = parsed_query.get("partial_results")
 

@@ -2,6 +2,7 @@ import json
 from csai.knowledge_base.knowledge_base import KnowledgeBase
 from csai.perception.perception import PerceptionModule
 from csai.reasoning.reasoning_engine import ReasoningEngine
+from csai.reasoning.causal_reasoning_engine import CausalReasoningEngine
 from csai.action.action_module import ActionModule
 
 class CSAISystem:
@@ -22,6 +23,7 @@ class CSAISystem:
         self.kb = KnowledgeBase()
         self.perception = PerceptionModule()
         self.reasoning = ReasoningEngine(self.kb)
+        self.causal_reasoning = CausalReasoningEngine(self.kb)
         self.action = ActionModule()
         self._load_kb(knowledge_base_path)
 
@@ -59,6 +61,10 @@ class CSAISystem:
         if not parsed_query:
             return "I'm sorry, I don't understand your question."
 
-        results, partial_results = self.reasoning.execute_query(parsed_query, deadline)
+        if parsed_query["type"] == "causal_explanation":
+            results, partial_results = self.causal_reasoning.explain_event(parsed_query["event"], deadline)
+        else:
+            results, partial_results = self.reasoning.execute_query(parsed_query, deadline)
+
         parsed_query["partial_results"] = partial_results
         return self.action.generate_response(parsed_query, results)
