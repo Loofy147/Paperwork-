@@ -3,6 +3,7 @@ from csai.knowledge_base.knowledge_base import KnowledgeBase
 from csai.perception.perception import PerceptionModule
 from csai.reasoning.reasoning_engine import ReasoningEngine
 from csai.reasoning.causal_reasoning_engine import CausalReasoningEngine
+from csai.reasoning.counterfactual_reasoning_engine import CounterfactualReasoningEngine
 from csai.action.action_module import ActionModule
 
 class CSAISystem:
@@ -24,6 +25,7 @@ class CSAISystem:
         self.perception = PerceptionModule()
         self.reasoning = ReasoningEngine(self.kb)
         self.causal_reasoning = CausalReasoningEngine(self.kb)
+        self.counterfactual_reasoning = CounterfactualReasoningEngine(self.kb)
         self.action = ActionModule()
         self._load_kb(knowledge_base_path)
 
@@ -63,6 +65,8 @@ class CSAISystem:
 
         if parsed_query["type"] == "causal_explanation":
             results, partial_results = self.causal_reasoning.explain_event(parsed_query["event"], deadline)
+        elif parsed_query["type"] == "counterfactual":
+            results, partial_results = self.counterfactual_reasoning.evaluate(parsed_query["intervention"], deadline)
         else:
             results, partial_results = self.reasoning.execute_query(parsed_query, deadline)
 

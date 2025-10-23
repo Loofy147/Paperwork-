@@ -26,6 +26,26 @@ class ActionModule:
             else:
                 return f"I'm sorry, I don't know why the {event_name}."
 
+        if parsed_query["type"] == "counterfactual":
+            intervention = parsed_query["intervention"]
+            original_causes = set(results["original_causes"])
+            counterfactual_causes = set(results["counterfactual_causes"])
+            target_event = results["target_event"].replace("_", " ")
+            removed_event = intervention["original_event"] # Use the original event for the response
+
+            if not original_causes:
+                return f"The {target_event} was not happening in the first place."
+
+            if not counterfactual_causes:
+                return f"If it had not {removed_event}, the {target_event} would not have occurred."
+
+            if counterfactual_causes != original_causes:
+                remaining_causes = " or ".join([cause.replace('_', ' ') for cause in sorted(list(counterfactual_causes))])
+                return f"If it had not {removed_event}, the {target_event} would still have occurred, but it would only be caused by {remaining_causes}."
+
+            else: # counterfactual_causes == original_causes
+                return "The outcome would not have changed."
+
         partial_results = parsed_query.get("partial_results")
 
         if partial_results is not None: # Timeout occurred

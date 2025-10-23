@@ -58,11 +58,14 @@ PYTHONPATH=. python3 main.py
 
 You can then type your questions at the prompt. To exit, type `exit`.
 
-You can ask different types of questions, including causal questions:
+You can ask different types of questions, including causal and counterfactual questions:
 
 ```
 > Why is the grass wet?
 The wet grass is caused by rain or sprinkler.
+
+> What would happen to the wet grass if it had not rained?
+If it had not rained, the wet grass would still have occurred, but it would only be caused by sprinkler.
 ```
 
 You can also specify a timeout for the reasoning process using the `--deadline` flag. For example:
@@ -74,6 +77,10 @@ You can also specify a timeout for the reasoning process using the `--deadline` 
 If the deadline is too short, the system may return a partial result or a message indicating that it timed out. The default deadline is 1.0 second.
 
 ## Key Features
+
+### Counterfactual Reasoning
+
+Fulfilling a major gap in the AI industry, the CSAI system can perform **counterfactual reasoning**. It can answer "what if" questions by simulating hypothetical scenarios. The system achieves this by creating a temporary copy of its knowledge graph, applying an "intervention" (e.g., removing a cause), and then reasoning over this modified reality to determine the new outcome. This allows for a deeper, more robust form of explainability and decision analysis.
 
 ### Causal Reasoning
 

@@ -23,7 +23,9 @@
         {"id": "wet_sidewalk", "properties": {"name": "wet sidewalk", "type": "state"}},
         {"id": "water", "properties": {"name": "water", "type": "substance"}},
         {"id": "sun", "properties": {"name": "sun", "type": "event"}},
-        {"id": "dry_grass", "properties": {"name": "dry grass", "type": "state"}}
+        {"id": "dry_grass", "properties": {"name": "dry grass", "type": "state"}},
+        {"id": "umbrella", "properties": {"name": "umbrella", "type": "object"}},
+        {"id": "getting_wet", "properties": {"name": "getting wet", "type": "state"}}
     ],
     "edges": [
         {"source": "raven", "target": "bird", "label": "is_a"},
@@ -48,6 +50,8 @@
         {"source": "rain", "target": "wet_grass", "label": "causes"},
         {"source": "rain", "target": "wet_sidewalk", "label": "causes"},
         {"source": "sprinkler", "target": "wet_grass", "label": "causes"},
-        {"source": "sun", "target": "dry_grass", "label": "causes"}
+        {"source": "sun", "target": "dry_grass", "label": "causes"},
+        {"source": "rain", "target": "getting_wet", "label": "causes"},
+        {"source": "umbrella", "target": "getting_wet", "label": "prevents"}
     ]
 }

@@ -33,19 +33,27 @@ This engine is responsible for handling queries that involve transitive relation
 
 ### 3.2. Causal Reasoning Engine
 
-To handle "why" questions, a new **Causal Reasoning Engine** will be introduced. This engine will be responsible for finding and returning causal chains from the knowledge graph.
+This engine handles "why" questions by finding and returning causal chains from the knowledge graph. It uses a backward-chaining search to find the causes of a given event.
 
-*   **Functionality:** Given a query like "Why is the grass wet?", the engine will search for incoming `causes` edges to the "wet grass" node. It will then traverse the graph backwards to construct a causal chain (e.g., "The grass is wet because it rained.").
-*   **Algorithm:** The engine will use a backward-chaining search algorithm, starting from the effect and looking for its causes.
+### 3.3. Counterfactual Reasoning Engine
 
-## 4. Module Updates for Causal Reasoning
+To answer "what if" questions, a **Counterfactual Reasoning Engine** will be introduced. This engine will simulate hypothetical scenarios by performing "interventions" on the knowledge graph.
 
-The introduction of causal reasoning will require updates to the following modules:
+*   **Functionality:** Given a query like "What if it had not rained?", the engine will determine the likely outcome.
+*   **Algorithm:**
+    1.  **Copy:** Create a temporary, in-memory copy of the knowledge graph to avoid altering the base knowledge.
+    2.  **Intervene:** Apply an "intervention" to the copied graph. This involves removing the specified event and its direct causal effects. For example, for the query "What if it had not rained?", the "rain" node and its outgoing `causes` edges would be removed.
+    3.  **Re-evaluate:** Use the existing `CausalReasoningEngine` to reason over the modified graph and determine the new state of the world. For example, it would re-evaluate the state of "wet grass."
+    4.  **Compare:** The engine will compare the outcome from the modified graph with the outcome from the original graph to generate a comparative answer.
 
-*   **Perception Module:** The query parser will be extended to recognize "why" questions and generate a new type of structured query (e.g., `{"type": "causal_explanation", "event": "wet grass"}`).
-*   **Action Module:** The response generator will be updated to format the output of the Causal Reasoning Engine into a human-readable explanation.
-*   **CSAISystem:** The main system will be updated to route causal queries to the new `CausalReasoningEngine`.
+## 4. Module Updates for Counterfactual Reasoning
+
+The introduction of counterfactual reasoning will require updates to the following modules:
+
+*   **Perception Module:** The query parser will be extended to recognize "what if" questions and generate a new `counterfactual` query type (e.g., `{"type": "counterfactual", "intervention": "remove", "event": "rain"}`).
+*   **Action Module:** The response generator will be updated to format the output of the Counterfactual Reasoning Engine into a clear, comparative statement (e.g., "If it had not rained, the grass would be dry.").
+*   **CSAISystem:** The main system will be updated to route counterfactual queries to the new `CounterfactualReasoningEngine`.
 
 ## 5. Time-Aware Computing
 
-The system incorporates time-aware computing by allowing a `deadline` to be set for each query. If the reasoning process exceeds this deadline, the system returns the best partial result it has found so far. This is handled by the `ReasoningEngine`, which periodically checks the elapsed time during its execution. The new `CausalReasoningEngine` will also incorporate this feature.
+All reasoning engines, including the new `CounterfactualReasoningEngine`, will incorporate time-aware computing. They will adhere to the `deadline` parameter and return partial results if the reasoning process is interrupted.

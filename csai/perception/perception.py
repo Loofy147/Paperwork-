@@ -59,4 +59,21 @@ class PerceptionModule:
             event_id = f"{state}_{subject}"
             return {"type": "causal_explanation", "event": event_id}
 
+        # Pattern 6: "What would happen to the [target] if it had not [event]?"
+        match = re.match(r"what would happen to the ([\w\s]+) if it had not ([\w_]+)\??", text)
+        if match:
+            target_phrase = match.group(1).strip()
+            target_id = target_phrase.replace(" ", "_")
+            original_event = match.group(2)
+            lemmatized_event = self.nlp(original_event)[0].lemma_
+            return {
+                "type": "counterfactual",
+                "intervention": {
+                    "type": "remove_cause",
+                    "event": lemmatized_event,
+                    "original_event": original_event,
+                    "target_event": target_id
+                }
+            }
+
         return None

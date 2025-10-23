@@ -50,6 +50,14 @@ def test_new_animal_is_a(csai_system):
     assert "living_thing" in response
     assert "mammal" in response
 
+def test_counterfactual_query_change(csai_system):
+    response = csai_system.ask("What would happen to the wet grass if it had not rained?")
+    assert "If it had not rained, the wet grass would still have occurred, but it would only be caused by sprinkler." in response
+
+def test_counterfactual_query_no_change(csai_system):
+    response = csai_system.ask("What would happen to the wet sidewalk if it had not rained?")
+    assert "If it had not rained, the wet sidewalk would not have occurred." in response
+
 def test_causal_query(csai_system):
     response = csai_system.ask("Why is the grass wet?")
     assert "The wet grass is caused by" in response
