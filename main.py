@@ -15,31 +15,51 @@ def main():
     print("="*50)
     print(" Welcome to the Causal-Symbolic AI (CSAI) System")
     print("="*50)
-    print("You can ask questions about the knowledge base.")
-    print("You can also specify a deadline in milliseconds (e.g., deadline=500).")
-    print("Example questions:")
+    print("You can ask questions, or teach me new things.")
+    print("Example commands:")
     print("  - What color is a raven?")
     print("  - deadline=1 What is a lion?")
-    print("  - Does a bird have wings?")
+    print("  - learn facts.txt")
+    print("  - ground bird in ./images")
     print("\nType 'exit' to quit.")
     print("-"*50)
 
     try:
         while True:
             try:
-                question = input("> ")
-                if question.lower().strip() == "exit":
+                user_input = input("> ")
+                if user_input.lower().strip() == "exit":
                     print("Exiting CSAI system. Goodbye!")
                     break
 
+                # Check for 'learn' command
+                learn_match = re.match(r"learn\s+(.*)", user_input, re.IGNORECASE)
+                if learn_match:
+                    file_path = learn_match.group(1).strip()
+                    response = csai.learn(file_path)
+                    print(response)
+                    continue
+
+                # Check for 'ground' command
+                ground_match = re.match(r"ground\s+([\w_]+)\s+in\s+(.*)", user_input, re.IGNORECASE)
+                if ground_match:
+                    concept = ground_match.group(1).strip()
+                    image_dir = ground_match.group(2).strip()
+                    response = csai.ground(concept, image_dir)
+                    print(response)
+                    continue
+
+                # Default to asking a question
                 deadline = 1.0 # default deadline
-                match = re.match(r"deadline=(\d+)\s*(.*)", question)
-                if match:
-                    deadline = int(match.group(1)) / 1000.0
-                    question = match.group(2)
+                deadline_match = re.match(r"deadline=(\d+)\s*(.*)", user_input)
+                question = user_input
+                if deadline_match:
+                    deadline = int(deadline_match.group(1)) / 1000.0
+                    question = deadline_match.group(2)
 
                 response = csai.ask(question, deadline=deadline)
                 print(response)
+
             except EOFError:
                 print("\nExiting CSAI system. Goodbye!")
                 break

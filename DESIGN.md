@@ -1,59 +1,58 @@
 # CSAI System Design
 
-This document outlines the architecture and design of the Causal-Symbolic AI (CSAI) system.
+This document outlines the architecture and design of the Causal-Symbolic AI (CSAI) system, a neuro-symbolic platform for commonsense reasoning, learning, and visual grounding.
 
-## 1. Core Modules
+## 1. Core Architecture
 
-The system is composed of four main modules:
+The system is a hybrid architecture that combines a symbolic reasoning core with neural modules for learning and perception.
 
-*   **Knowledge Base:** A graph-based database for storing commonsense knowledge.
-*   **Perception Module:** Translates natural language queries into a structured, machine-readable format.
-*   **Reasoning Engine:** Performs logical inference on the structured query.
-*   **Action Module:** Translates the reasoned output back into a natural language response.
+*   **Symbolic Core:**
+    *   **Knowledge Base:** A graph-based database for storing and managing commonsense knowledge.
+    *   **Reasoning Engines:** A suite of engines for performing logical, causal, and counterfactual inference.
+*   **Neural Modules:**
+    *   **Perception Module:** Translates natural language queries into a structured, machine-readable format.
+    *   **Action Module:** Translates reasoned output back into natural language.
+    *   **Knowledge Acquisition Module:** Extracts new knowledge from unstructured text.
+    *   **Visual Grounding Module:** Links symbolic concepts to visual data.
 
-## 2. Knowledge Representation
+## 2. Symbolic Core
 
-The knowledge base is a directed graph where nodes represent concepts or entities, and edges represent relationships between them.
+### 2.1. Knowledge Representation
 
-*   **Nodes:** Represent objects, concepts, or events (e.g., "raven," "bird," "rain").
-*   **Edges:** Represent relationships, such as:
-    *   `is_a`: For taxonomic relationships (e.g., "raven" -> "bird").
-    *   `has_property`: For attributes (e.g., "raven" -> "black").
-    *   `has_part`: For composition (e.g., "bird" -> "wing").
-    *   `causes`: For direct causal links (e.g., "rain" -> "wet grass").
-    *   `prevents`: For preventative causal links (e.g., "umbrella" -> "getting wet").
+The knowledge base is a directed graph where nodes are concepts and edges are relationships.
 
-## 3. Reasoning
+*   **Nodes:** Represent objects, concepts, or events.
+*   **Edges:** Represent relationships, such as `is_a`, `has_property`, `causes`, and `prevents`.
 
-The system's reasoning capabilities are handled by a set of specialized engines.
+### 2.2. Reasoning Engines
 
-### 3.1. Transitive Reasoning Engine
+The system includes a set of specialized engines for different reasoning tasks:
 
-This engine is responsible for handling queries that involve transitive relationships, such as "is_a." It uses a breadth-first search to traverse the knowledge graph and infer relationships.
+*   **Transitive Reasoning Engine:** Handles taxonomic queries (e.g., "What is a raven?").
+*   **Causal Reasoning Engine:** Answers "why" questions by traversing causal chains.
+*   **Counterfactual Reasoning Engine:** Answers "what if" questions by simulating interventions on a copy of the knowledge graph.
 
-### 3.2. Causal Reasoning Engine
+## 3. Neural Modules
 
-This engine handles "why" questions by finding and returning causal chains from the knowledge graph. It uses a backward-chaining search to find the causes of a given event.
+### 3.1. Knowledge Acquisition Module (The "Learner")
 
-### 3.3. Counterfactual Reasoning Engine
+To overcome the static knowledge bottleneck, this module will enable the system to learn from text.
 
-To answer "what if" questions, a **Counterfactual Reasoning Engine** will be introduced. This engine will simulate hypothetical scenarios by performing "interventions" on the knowledge graph.
+*   **Functionality:** Given a plain text file, the module will parse the sentences, identify entities, and extract new relationships to be added to the knowledge base.
+*   **Technology:** It will use `spaCy` for dependency parsing and rule-based pattern matching to identify subject-verb-object triples that can be translated into new knowledge graph edges.
 
-*   **Functionality:** Given a query like "What if it had not rained?", the engine will determine the likely outcome.
-*   **Algorithm:**
-    1.  **Copy:** Create a temporary, in-memory copy of the knowledge graph to avoid altering the base knowledge.
-    2.  **Intervene:** Apply an "intervention" to the copied graph. This involves removing the specified event and its direct causal effects. For example, for the query "What if it had not rained?", the "rain" node and its outgoing `causes` edges would be removed.
-    3.  **Re-evaluate:** Use the existing `CausalReasoningEngine` to reason over the modified graph and determine the new state of the world. For example, it would re-evaluate the state of "wet grass."
-    4.  **Compare:** The engine will compare the outcome from the modified graph with the outcome from the original graph to generate a comparative answer.
+### 3.2. Visual Grounding Module (The "Seer")
 
-## 4. Module Updates for Counterfactual Reasoning
+To address the symbol grounding problem, this module will connect the abstract symbols in the knowledge base to the perceptual world.
 
-The introduction of counterfactual reasoning will require updates to the following modules:
+*   **Functionality:** Given a symbolic concept and a set of images, the module will identify which images are the best visual representation of that concept.
+*   **Technology:** It will use the pre-trained **CLIP (Contrastive Language-Image Pre-Training)** model. The module will encode the textual label of the concept and the images into a shared embedding space and then calculate the cosine similarity to find the best match. This allows for powerful, zero-shot visual identification.
 
-*   **Perception Module:** The query parser will be extended to recognize "what if" questions and generate a new `counterfactual` query type (e.g., `{"type": "counterfactual", "intervention": "remove", "event": "rain"}`).
-*   **Action Module:** The response generator will be updated to format the output of the Counterfactual Reasoning Engine into a clear, comparative statement (e.g., "If it had not rained, the grass would be dry.").
-*   **CSAISystem:** The main system will be updated to route counterfactual queries to the new `CounterfactualReasoningEngine`.
+## 4. System Integration
 
-## 5. Time-Aware Computing
+The `CSAISystem` will be updated to orchestrate the new learning and grounding modules. The interactive REPL will be extended with new commands:
 
-All reasoning engines, including the new `CounterfactualReasoningEngine`, will incorporate time-aware computing. They will adhere to the `deadline` parameter and return partial results if the reasoning process is interrupted.
+*   `learn <filename>`: Triggers the Knowledge Acquisition Module to read a text file and update the knowledge base.
+*   `ground <concept> in <image_directory>`: Triggers the Visual Grounding Module to find the best image for a given concept in a directory of images.
+
+All reasoning engines will continue to support **Time-Aware Computing**, allowing for queries to be executed under a deadline.

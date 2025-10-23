@@ -5,6 +5,8 @@ from csai.reasoning.reasoning_engine import ReasoningEngine
 from csai.reasoning.causal_reasoning_engine import CausalReasoningEngine
 from csai.reasoning.counterfactual_reasoning_engine import CounterfactualReasoningEngine
 from csai.action.action_module import ActionModule
+from csai.learning.knowledge_acquirer import KnowledgeAcquirer
+from csai.grounding.visual_grounder import VisualGrounder
 
 class CSAISystem:
     """
@@ -27,6 +29,8 @@ class CSAISystem:
         self.causal_reasoning = CausalReasoningEngine(self.kb)
         self.counterfactual_reasoning = CounterfactualReasoningEngine(self.kb)
         self.action = ActionModule()
+        self.knowledge_acquirer = KnowledgeAcquirer(self.kb)
+        self.visual_grounder = VisualGrounder()
         self._load_kb(knowledge_base_path)
 
     def _load_kb(self, path: str):
@@ -72,3 +76,38 @@ class CSAISystem:
 
         parsed_query["partial_results"] = partial_results
         return self.action.generate_response(parsed_query, results)
+
+    def learn(self, file_path: str) -> str:
+        """
+        Learns new facts from a text file.
+
+        Args:
+            file_path (str): The path to the text file.
+
+        Returns:
+            str: A message indicating the result of the learning process.
+        """
+        try:
+            with open(file_path, 'r') as f:
+                text = f.read()
+            self.knowledge_acquirer.learn_from_text(text)
+            return "I have learned new facts from the text."
+        except FileNotFoundError:
+            return "I'm sorry, I couldn't find that file."
+
+    def ground(self, concept_name: str, image_directory: str) -> str:
+        """
+        Grounds a concept in an image.
+
+        Args:
+            concept_name (str): The name of the concept to ground.
+            image_directory (str): The path to the directory of images.
+
+        Returns:
+            str: A message indicating the result of the grounding process.
+        """
+        best_image = self.visual_grounder.ground_concept(concept_name, image_directory)
+        if best_image:
+            return f"I believe the best image for '{concept_name}' is '{best_image}'."
+        else:
+            return f"I'm sorry, I couldn't find a suitable image for '{concept_name}' in that directory."
