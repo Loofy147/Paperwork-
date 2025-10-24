@@ -9,6 +9,7 @@ from csai.learning.knowledge_acquirer import KnowledgeAcquirer
 from csai.grounding.visual_grounder import VisualGrounder
 from csai.reasoning.temporal_reasoning_engine import TemporalReasoningEngine
 from csai.planning.planner import Planner
+from csai.dialogue.dialogue_manager import DialogueManager
 
 class CSAISystem:
     """
@@ -35,6 +36,8 @@ class CSAISystem:
         self.action = ActionModule()
         self.knowledge_acquirer = KnowledgeAcquirer(self.kb)
         self.visual_grounder = VisualGrounder()
+        self.dialogue_manager = DialogueManager()
+        self.current_state = {"sprinkler_off", "wet_grass"} # Initial state
         self._load_kb(knowledge_base_path)
 
     def _load_kb(self, path: str):
@@ -84,25 +87,25 @@ class CSAISystem:
         parsed_query["partial_results"] = partial_results
         return self.action.generate_response(parsed_query, results)
 
-    def plan(self, goal: str) -> str:
+    def plan(self, goal: str, chosen_method: str = None) -> str:
         """
-        Generates a plan to achieve a given goal.
+        Generates a plan to achieve a given goal, engaging in a dialogue if needed.
 
         Args:
             goal (str): The goal to achieve.
+            chosen_method (str, optional): The method chosen by the user.
 
         Returns:
-            str: A message indicating the plan or the result of the planning process.
+            str: A message indicating the plan, a question, or the result.
         """
-        # For now, we assume a simple initial state. A more advanced implementation
-        # would perceive the current state of the world.
-        initial_state = {"sprinkler_off"}
-        goal_state = {goal}
+        result = self.planner.find_plan(self.current_state, goal, chosen_method)
 
-        plan = self.planner.find_plan(initial_state, goal_state)
-
-        if plan:
-            return self.action.format_plan(plan)
+        if isinstance(result, list): # A concrete plan was found
+            return self.action.format_plan(result)
+        elif isinstance(result, dict): # The planner needs a choice
+            return self.dialogue_manager.start_clarification(result)
+        elif chosen_method: # An invalid choice was made
+            return "Invalid choice. Please try again."
         else:
             return "I'm sorry, I couldn't find a plan to achieve that goal."
 

@@ -11,12 +11,13 @@ The system is composed of the following modules:
 *   **Symbolic Core:**
     *   **Knowledge Base:** A graph-based database for storing and managing commonsense knowledge, including temporal and action-based information.
     *   **Reasoning Engines:** A suite of engines for performing logical, causal, counterfactual, and temporal inference.
-    *   **Planning Module:** A goal-oriented planner that can generate a sequence of actions to achieve a desired state.
-*   **Neural Modules:**
+    *   **Planning Module:** A hierarchical, goal-oriented planner that can generate and decompose plans.
+*   **Neural & State-Based Modules:**
     *   **Perception Module:** Translates natural language queries and commands into a structured, machine-readable format.
     *   **Action Module:** Translates reasoned output and plans back into natural language.
     *   **Knowledge Acquisition Module:** Extracts new knowledge from unstructured text.
     *   **Visual Grounding Module:** Links symbolic concepts to visual data.
+    *   **Dialogue Manager:** Manages the state and flow of the conversation.
 
 ## Setup and Installation
 
@@ -53,31 +54,24 @@ PYTHONPATH=. python3 main.py
 
 You can then type your questions at the prompt. To exit, type `exit`.
 
-You can ask different types of questions, use the neuro-symbolic capabilities, or ask the system to generate a plan:
+You can ask different types of questions, use the neuro-symbolic capabilities, or engage in a collaborative planning session:
 
 ```
-> Why is the grass wet?
-The wet grass is caused by rain or sprinkler.
-
-> What would happen to the wet grass if it had not rained?
-If it had not rained, the wet grass would still have occurred, but it would only be caused by sprinkler.
-
-> learn facts.txt
-I have learned new facts from the text.
-
-> ground bird in ./images
-I believe the best image for 'bird' is 'sparrow.jpg'.
-
 > plan for dry_grass
+I have a few options to achieve that. Which one should I use?
+  - method_wait_for_sun: wait for sun
+  - method_turn_off_sprinkler: turn off sprinkler
+
+> method_turn_off_sprinkler
 Here is the plan:
-1. wait for sun
+1. turn off sprinkler
 ```
 
 ## Key Features
 
-### Goal-Oriented Planning
+### Collaborative Hierarchical Planning
 
-The system is no longer just a passive oracle; it is a proactive agent that can generate plans to achieve goals. The `plan for` command triggers a `Planner` module that uses a backward-chaining search to find a sequence of actions that will transform the current state of the world into a desired goal state. This is a major step towards autonomous agency.
+The system is no longer just a passive planner; it is a collaborative agent that can engage in a dialogue to refine a plan. It uses a Hierarchical Task Network (HTN) planner to reason about abstract goals and decompose them into concrete steps. If it finds multiple valid ways to achieve a goal, it will ask for clarification, allowing the user to guide the planning process.
 
 ### Neuro-Symbolic Capabilities
 
@@ -88,13 +82,13 @@ The CSAI system bridges the gap between symbolic reasoning and neural learning w
 
 ### Advanced Reasoning
 
-*   **Temporal Reasoning:** The system can reason about time and sequences, answering questions like "What happened after the rain?".
-*   **Counterfactual Reasoning:** The system can answer "what if" questions by simulating hypothetical scenarios.
-*   **Causal Reasoning:** The system can answer "why" questions by traversing a knowledge graph that contains explicit causal relationships.
+*   **Temporal Reasoning:** The system can reason about time and sequences.
+*   **Counterfactual Reasoning:** The system can answer "what if" questions.
+*   **Causal Reasoning:** The system can answer "why" questions.
 
 ### Time-Aware Computing
 
-All reasoning and planning queries can be executed with a `deadline`, and if the system cannot find a complete answer within the timeframe, it will return the best partial result it has found.
+All reasoning and planning queries can be executed with a `deadline`.
 
 ## Running the Tests
 

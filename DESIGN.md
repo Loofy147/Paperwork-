@@ -1,57 +1,53 @@
 # CSAI System Design
 
-This document outlines the architecture and design of the Causal-Symbolic AI (CSAI) system, a neuro-symbolic platform for commonsense reasoning, learning, planning, and visual grounding.
+This document outlines the architecture and design of the Causal-Symbolic AI (CSAI) system, a neuro-symbolic platform for commonsense reasoning, learning, planning, and collaborative dialogue.
 
 ## 1. Core Architecture
 
-The system is a hybrid architecture that combines a symbolic reasoning core with neural modules for learning and perception.
+The system is a hybrid architecture that combines a symbolic reasoning core with neural modules for learning, perception, and dialogue.
 
 *   **Symbolic Core:**
-    *   **Knowledge Base:** A graph-based database for storing and managing commonsense knowledge, including temporal and action-based information.
+    *   **Knowledge Base:** A graph-based database for storing and managing commonsense knowledge, including temporal, action-based, and abstract task information.
     *   **Reasoning Engines:** A suite of engines for performing logical, causal, counterfactual, and temporal inference.
-    *   **Planning Module:** A goal-oriented planner that can generate a sequence of actions to achieve a desired state.
-*   **Neural Modules:**
+    *   **Planning Module:** A hierarchical, goal-oriented planner that can generate and decompose plans.
+*   **Neural & State-Based Modules:**
     *   **Perception Module:** Translates natural language queries and commands into a structured, machine-readable format.
     *   **Action Module:** Translates reasoned output and plans back into natural language.
     *   **Knowledge Acquisition Module:** Extracts new knowledge from unstructured text.
     *   **Visual Grounding Module:** Links symbolic concepts to visual data.
+    *   **Dialogue Manager:** Manages the state and flow of the conversation.
 
 ## 2. Symbolic Core
 
-### 2.1. Knowledge Representation for Planning
+### 2.1. Knowledge Representation for Hierarchical Planning
 
-To support planning, the knowledge base will be evolved to represent states, actions, and time.
+To support hierarchical planning, the knowledge base will be evolved to represent abstract tasks and their decompositions.
 
-*   **State Representation:** Facts will no longer be static. They will be represented as nodes with temporal properties, allowing the system to reason about the state of the world at different points in time.
-*   **Action Representation:** Actions will be represented as nodes in the graph. Inspired by the STRIPS formalism, actions will be connected to other nodes via new edge types:
-    *   `has_precondition`: A condition that must be true for the action to be performed.
-    *   `has_add_effect`: A state that becomes true after the action is performed.
-    *   `has_delete_effect`: A state that becomes false after the action is performed.
+*   **Abstract Tasks:** High-level tasks (e.g., `achieve_dry_grass`) will be represented as nodes.
+*   **Methods:** Actions will now be considered "methods" that can achieve a task. Each abstract task can have multiple methods. Methods are linked to abstract tasks via a `decomposes` edge.
+*   **STRIPS-Style Actions:** Primitive actions will continue to be represented using the STRIPS formalism, with `precondition`, `add_effect`, and `delete_effect` edges.
 
 ### 2.2. Reasoning and Planning
 
-*   **Temporal Reasoning Engine:** A new engine responsible for answering questions about time and sequences (e.g., "What happened after the rain?"). This is a crucial prerequisite for planning.
-*   **Planning Module:** The core of the new agency. Given a goal state, the planner will use a search algorithm (e.g., backward-chaining) to find a sequence of actions that can transform the current state of the world into the desired goal state.
+*   **Hierarchical Planner:** The `Planner` will be upgraded to a Hierarchical Task Network (HTN) planner. Given a high-level goal, it will find abstract tasks that can achieve that goal and then recursively decompose them into sub-tasks until a concrete, executable plan is formed.
+*   **Temporal Reasoning Engine:** Will continue to support reasoning about time and sequences.
 
-### 2.3. Existing Reasoning Engines
+## 3. Dialogue and Collaboration
 
-The system will continue to support its existing reasoning capabilities:
+### 3.1. Dialogue Manager
 
-*   **Transitive Reasoning Engine:** For taxonomic queries.
-*   **Causal Reasoning Engine:** For "why" questions.
-*   **Counterfactual Reasoning Engine:** For "what if" questions.
+A new `DialogueManager` module will be introduced to enable multi-turn, collaborative conversations.
 
-## 3. Neural Modules
-
-The existing neural modules will be updated to support the new planning capabilities.
-
-*   **Perception Module:** Will be taught to understand goal-oriented commands (e.g., `plan for <goal>`).
-*   **Action Module:** Will be updated to present the generated plans in a clear, step-by-step format.
-*   **Knowledge Acquisition Module:** Can be extended in the future to learn new actions from text.
-*   **Visual Grounding Module:** Can be used to ground the preconditions and effects of actions in the visual world.
+*   **Functionality:** The Dialogue Manager will maintain a `DialogueState`, tracking the current user intent, the conversation history, and any pending questions or choices.
+*   **State-Based Approach:** It will use a simple, state-based model. For example, when the planner finds multiple methods to achieve a goal, the Dialogue Manager will enter a "clarification" state and ask the user for input.
 
 ## 4. System Integration
 
-The `CSAISystem` will be upgraded to orchestrate the new planning capabilities. The interactive REPL will be extended with a new, powerful command:
+The `CSAISystem` will be upgraded to be a conversational agent. The interactive REPL will be updated to handle multi-turn dialogues.
 
-*   `plan for <goal>`: Triggers the Planning Module to generate a sequence of actions to achieve the specified goal.
+*   **Conversational Flow:** The main loop will now be driven by the `DialogueManager`. The system will be able to ask clarifying questions and understand contextual replies.
+*   **Example Interaction:**
+    *   User: `plan for dry grass`
+    *   AI: `I have two ways to achieve that: wait for the sun, or turn off the sprinkler. The sprinkler is currently on. Which method should I use?`
+    *   User: `wait for the sun`
+    *   AI: `Here is the plan: 1. wait for sun`

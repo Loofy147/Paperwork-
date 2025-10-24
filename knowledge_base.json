@@ -26,11 +26,13 @@
         {"id": "dry_grass", "properties": {"name": "dry grass", "type": "state"}},
         {"id": "umbrella", "properties": {"name": "umbrella", "type": "object"}},
         {"id": "getting_wet", "properties": {"name": "getting wet", "type": "state"}},
-        {"id": "action_turn_on_sprinkler", "properties": {"name": "turn on sprinkler", "type": "action"}},
-        {"id": "action_turn_off_sprinkler", "properties": {"name": "turn off sprinkler", "type": "action"}},
-        {"id": "action_wait_for_sun", "properties": {"name": "wait for sun", "type": "action"}},
         {"id": "sprinkler_on", "properties": {"name": "sprinkler is on", "type": "state"}},
-        {"id": "sprinkler_off", "properties": {"name": "sprinkler is off", "type": "state"}}
+        {"id": "sprinkler_off", "properties": {"name": "sprinkler is off", "type": "state"}},
+        {"id": "task_achieve_dry_grass", "properties": {"name": "achieve dry grass", "type": "abstract_task"}},
+        {"id": "method_wait_for_sun", "properties": {"name": "wait for sun", "type": "method"}},
+        {"id": "method_turn_off_sprinkler", "properties": {"name": "turn off sprinkler", "type": "method"}},
+        {"id": "action_wait_for_sun", "properties": {"name": "wait for sun", "type": "action"}},
+        {"id": "action_turn_off_sprinkler", "properties": {"name": "turn off sprinkler", "type": "action"}}
     ],
     "edges": [
         {"source": "raven", "target": "bird", "label": "is_a"},
@@ -58,15 +60,18 @@
         {"source": "sun_event_1", "target": "dry_grass", "label": "causes"},
         {"source": "rain_event_1", "target": "getting_wet", "label": "causes"},
         {"source": "umbrella", "target": "getting_wet", "label": "prevents"},
-        {"source": "action_turn_on_sprinkler", "target": "sprinkler_off", "label": "has_precondition"},
-        {"source": "action_turn_on_sprinkler", "target": "sprinkler_on", "label": "has_add_effect"},
-        {"source": "action_turn_on_sprinkler", "target": "sprinkler_off", "label": "has_delete_effect"},
-        {"source": "action_turn_off_sprinkler", "target": "sprinkler_on", "label": "has_precondition"},
-        {"source": "action_turn_off_sprinkler", "target": "sprinkler_off", "label": "has_add_effect"},
-        {"source": "action_turn_off_sprinkler", "target": "sprinkler_on", "label": "has_delete_effect"},
         {"source": "sprinkler_on", "target": "wet_grass", "label": "causes"},
+        {"source": "task_achieve_dry_grass", "target": "method_wait_for_sun", "label": "decomposes"},
+        {"source": "task_achieve_dry_grass", "target": "method_turn_off_sprinkler", "label": "decomposes"},
+        {"source": "method_wait_for_sun", "target": "wet_grass", "label": "has_precondition"},
+        {"source": "method_wait_for_sun", "target": "action_wait_for_sun", "label": "has_subtask"},
+        {"source": "method_turn_off_sprinkler", "target": "sprinkler_on", "label": "has_precondition"},
+        {"source": "method_turn_off_sprinkler", "target": "action_turn_off_sprinkler", "label": "has_subtask"},
         {"source": "action_wait_for_sun", "target": "wet_grass", "label": "has_precondition"},
         {"source": "action_wait_for_sun", "target": "dry_grass", "label": "has_add_effect"},
-        {"source": "action_wait_for_sun", "target": "wet_grass", "label": "has_delete_effect"}
+        {"source": "action_wait_for_sun", "target": "wet_grass", "label": "has_delete_effect"},
+        {"source": "action_turn_off_sprinkler", "target": "sprinkler_on", "label": "has_precondition"},
+        {"source": "action_turn_off_sprinkler", "target": "sprinkler_off", "label": "has_add_effect"},
+        {"source": "action_turn_off_sprinkler", "target": "sprinkler_on", "label": "has_delete_effect"}
     ]
 }

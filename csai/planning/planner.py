@@ -2,8 +2,8 @@ from csai.knowledge_base.knowledge_base import KnowledgeBase
 
 class Planner:
     """
-    A simple goal-oriented planner that uses a backward-chaining search to find a
-    sequence of actions to achieve a goal.
+    A Hierarchical Task Network (HTN) planner that can decompose abstract tasks
+    into concrete plans.
     """
 
     def __init__(self, knowledge_base: KnowledgeBase):
@@ -15,78 +15,92 @@ class Planner:
         """
         self.kb = knowledge_base
 
-    def find_plan(self, current_state: set, goal_state: set) -> list | None:
+    def find_plan(self, current_state: set, goal: str, chosen_method: str = None) -> list | dict | None:
         """
-        Finds a sequence of actions to achieve a goal state from a current state.
+        Finds a sequence of actions to achieve a goal.
+
+        If multiple methods are available to achieve the goal, it will return a
+        dictionary of choices for the user.
 
         Args:
-            current_state (set): A set of propositions representing the current state.
-            goal_state (set): A set of propositions representing the goal state.
+            current_state (set): The current state of the world.
+            goal (str): The goal to achieve.
+            chosen_method (str, optional): The method chosen by the user.
 
         Returns:
-            list or None: A list of action IDs representing the plan, or None if no
-                          plan is found.
+            list, dict, or None: A list of actions, a dictionary of choices, or None.
         """
-        # If the goal is already met, the plan is empty.
-        if goal_state.issubset(current_state):
-            return []
+        # Find the abstract task that achieves the goal.
+        task = self._find_task_for_goal(goal)
+        if not task:
+            return None
 
-        # Find all actions in the knowledge base.
-        actions = [
-            node_id for node_id, props in self.kb.graph.nodes(data=True)
-            if props.get("type") == "action"
+        # Find all valid methods for the task.
+        valid_methods = [
+            method for method in self._find_methods_for_task(task)
+            if self._preconditions_met(current_state, self._get_preconditions(method))
         ]
 
-        # Try to find a plan by recursively searching backward from the goal.
-        return self._search(current_state, goal_state, actions, [])
+        # If a method has been chosen, use it.
+        if chosen_method:
+            if chosen_method in valid_methods:
+                return self._decompose_method(current_state, chosen_method)
+            else:
+                return None # Invalid choice
 
-    def _search(self, current_state: set, goal_state: set, actions: list, plan: list) -> list | None:
-        """
-        The recursive search function for the planner.
-        """
-        # Find a goal that is not yet satisfied.
-        unmet_goal = next((g for g in goal_state if g not in current_state), None)
-        if unmet_goal is None:
-            return plan # All goals are met
+        # If there are multiple valid methods, ask the user to choose.
+        if len(valid_methods) > 1:
+            return {method: self.kb.get_node(method)["name"] for method in valid_methods}
 
-        # Find actions that can achieve the unmet goal.
-        possible_actions = [
-            action_id for action_id in actions
-            if (action_id, unmet_goal, "has_add_effect") in self.kb.graph.edges(data="label")
-        ]
+        # If there is only one valid method, use it.
+        if len(valid_methods) == 1:
+            return self._decompose_method(current_state, valid_methods[0])
 
-        for action in possible_actions:
-            preconditions = {
-                u for u, _, label in self.kb.find_edges(source_id=action)
-                if label == "has_precondition"
-            }
+        return None
 
-            # Recursively plan to meet the preconditions.
-            sub_plan = self._search(current_state, preconditions, actions, plan)
-            if sub_plan is not None:
-                new_state = self._apply_action(current_state, action)
-                final_plan = self._search(new_state, goal_state, actions, sub_plan + [action])
-                if final_plan is not None:
-                    return final_plan
+    def _decompose_method(self, current_state: set, method_id: str) -> list | None:
+        """Decomposes a method into a sequence of actions."""
+        preconditions = self._get_preconditions(method_id)
+        if not self._preconditions_met(current_state, preconditions):
+            return None
 
-        return None # No plan found
+        subtasks = self._get_subtasks(method_id)
+        plan = []
+        for subtask in subtasks:
+            if self.kb.get_node(subtask)["type"] == "action":
+                plan.append(subtask)
+            else:
+                # Recursive decomposition of sub-methods
+                sub_plan = self._decompose_method(current_state, subtask)
+                if sub_plan:
+                    plan.extend(sub_plan)
+        return plan
 
-    def _apply_action(self, state: set, action_id: str) -> set:
-        """
-        Applies an action to a state to produce a new state.
-        """
-        new_state = set(state)
+    def _find_task_for_goal(self, goal: str) -> str | None:
+        """Finds the abstract task that can achieve a given goal."""
+        for u, v, label in self.kb.graph.edges(data="label"):
+            if label == "has_add_effect" and v == goal:
+                action = u
+                for t, a, label2 in self.kb.graph.in_edges(action, data="label"):
+                    if label2 == "has_subtask":
+                        method = t
+                        for task, m, label3 in self.kb.graph.in_edges(method, data="label"):
+                            if label3 == "decomposes":
+                                return task
+        return None
 
-        add_effects = {
-            v for _, v, label in self.kb.find_edges(source_id=action_id)
-            if label == "has_add_effect"
-        }
-        delete_effects = {
-            v for _, v, label in self.kb.find_edges(source_id=action_id)
-            if label == "has_delete_effect"
-        }
+    def _find_methods_for_task(self, task_id: str) -> list:
+        """Finds all methods that can decompose a given task."""
+        return [v for u, v, label in self.kb.find_edges(source_id=task_id) if label == "decomposes"]
 
-        new_state.difference_update(delete_effects)
-        new_state.update(add_effects)
+    def _get_preconditions(self, method_id: str) -> set:
+        """Gets the preconditions for a given method."""
+        return {v for u, v, label in self.kb.find_edges(source_id=method_id) if label == "has_precondition"}
 
-        return new_state
+    def _preconditions_met(self, current_state: set, preconditions: set) -> bool:
+        """Checks if all preconditions are met in the current state."""
+        return preconditions.issubset(current_state)
+
+    def _get_subtasks(self, method_id: str) -> list:
+        """Gets the subtasks for a given method."""
+        return [v for u, v, label in self.kb.find_edges(source_id=method_id) if label == "has_subtask"]
