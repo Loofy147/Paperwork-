@@ -1,3 +1,4 @@
+import time
 from csai.knowledge_base.knowledge_base import KnowledgeBase
 
 
@@ -31,58 +32,85 @@ class ReasoningEngine:
         Args:
             parsed_query (dict): The structured query from the
                 PerceptionModule.
+    def execute_query(self, parsed_query: dict, deadline: float = 1.0) -> tuple[list, set | None]:
+        """
+        Executes a structured query against the knowledge base.
+
+        Args:
+            parsed_query (dict): The structured query from the PerceptionModule.
+            deadline (float): The maximum time in seconds to spend on the query.
 
         Returns:
-            list: A list of results that satisfy the query. The format of the
-                  results depends on the query type.
+            tuple[list, set | None]: A tuple containing the list of results and,
+                                     in case of a timeout, a set of partial results.
+                                     Returns None for partial_results otherwise.
         """
+        start_time = time.time()
         subject = parsed_query["subject"]
 
         if parsed_query["type"] == "has_property":
             edges = self.kb.find_edges(source_id=subject, label="has_property")
+            # This query is simple and not expected to time out, so no deadline check.
             for _, o, _ in edges:
                 node = self.kb.get_node(o)
                 if node and node.get("type") == parsed_query["property"]:
-                    return [o]
-            return []
+                    return [o], None
+            return [], None
 
         if parsed_query["type"] in ["is_a_specific", "is_a_generic"]:
-            inferred_types = {subject}
+            all_found_types = set()
             queue = [subject]
+            processed = {subject}
+
             while queue:
+                if time.time() - start_time > deadline:
+                    return [], all_found_types
+
                 current = queue.pop(0)
                 edges = self.kb.find_edges(source_id=current, label="is_a")
-                for _, o, _ in edges:
-                    if o not in inferred_types:
-                        inferred_types.add(o)
-                        queue.append(o)
-
-            inferred_types.remove(subject)
+                for _, target_node, _ in edges:
+                    if target_node not in processed:
+                        all_found_types.add(target_node)
+                        queue.append(target_node)
+                        processed.add(target_node)
 
             if parsed_query["type"] == "is_a_specific":
                 target = parsed_query["target"]
                 return [t for t in inferred_types if t == target]
+                final_results = [t for t in all_found_types if t == parsed_query["target"]]
+                return final_results, None
             else:
-                return sorted(list(inferred_types))
+                return sorted(list(all_found_types)), None
 
         if parsed_query["type"] == "has_part":
-            inferred_parts = set()
-
-            inferred_types = {subject}
+            # First, find all types of the subject.
+            all_found_types = {subject}
             queue = [subject]
+            processed = {subject}
             while queue:
+                if time.time() - start_time > deadline:
+                    return [], set() # Timed out while just finding types
+
                 current = queue.pop(0)
                 edges = self.kb.find_edges(source_id=current, label="is_a")
-                for _, o, _ in edges:
-                    if o not in inferred_types:
-                        inferred_types.add(o)
-                        queue.append(o)
+                for _, target_node, _ in edges:
+                    if target_node not in processed:
+                        all_found_types.add(target_node)
+                        queue.append(target_node)
+                        processed.add(target_node)
 
-            for t in inferred_types:
+            # Now, check for the part in the subject and all its types.
+            for t in all_found_types:
+                if time.time() - start_time > deadline:
+                    # Return empty-handed, as we didn't finish searching.
+                    # A more complex implementation could return partial findings here.
+                    return [], {"..."}
+
                 edges = self.kb.find_edges(source_id=t, label="has_part")
-                for _, o, _ in edges:
-                    inferred_parts.add(o)
+                for _, part, _ in edges:
+                    if part == parsed_query["part"]:
+                        return [part], None # Found it!
 
-            return [p for p in inferred_parts if p == parsed_query["part"]]
+            return [], None # Finished searching, didn't find it.
 
-        return []
+        return [], None
