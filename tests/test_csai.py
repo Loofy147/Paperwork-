@@ -49,3 +49,36 @@ def test_new_animal_is_a(csai_system):
     assert "cat" in response
     assert "living_thing" in response
     assert "mammal" in response
+
+def test_counterfactual_query_change(csai_system):
+    response = csai_system.ask("What would happen to the wet grass if it had not rained?")
+    assert "If it had not rained, the wet grass would still have occurred, but it would only be caused by sprinkler." in response
+
+def test_counterfactual_query_no_change(csai_system):
+    response = csai_system.ask("What would happen to the wet sidewalk if it had not rained?")
+    assert "If it had not rained, the wet sidewalk would not have occurred." in response
+
+def test_causal_query(csai_system):
+    response = csai_system.ask("Why is the grass wet?")
+    assert "The wet grass is caused by" in response
+    assert "rain" in response
+    assert "sprinkler" in response
+
+def test_deadline_tight(csai_system):
+    response = csai_system.ask("What is a lion?", deadline=0.000001)
+    # With a tight deadline, we expect either a partial result or a timeout message.
+    assert response != "A lion is a type of animal, cat, living_thing, mammal."
+
+    is_partial_result = "A lion is a type of" in response
+    is_timeout_message = "deadline was too short" in response
+
+    assert is_partial_result or is_timeout_message, f"Unexpected response: {response}"
+
+def test_deadline_generous(csai_system):
+    response = csai_system.ask("What is a lion?", deadline=1.0)
+    # With a generous deadline, we expect a full result
+    assert "A lion is a type of" in response
+    assert "animal" in response
+    assert "cat" in response
+    assert "living_thing" in response
+    assert "mammal" in response
