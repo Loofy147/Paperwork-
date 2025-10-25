@@ -1,16 +1,16 @@
 from csai.knowledge_base.knowledge_base import KnowledgeBase
 
 class ReasoningEngine:
-    """
-    Performs logical inference on a structured query using a knowledge base.
+    """Performs logical inference on a structured query using a knowledge base.
 
     This engine uses a simple forward-chaining approach to infer new facts
     from the knowledge base, with a focus on handling transitive 'is_a'
-    relationships.
+    relationships. It is the core of the CSAI system, responsible for
+    deriving answers to user queries by traversing the knowledge graph.
     """
+
     def __init__(self, knowledge_base: KnowledgeBase):
-        """
-        Initializes the ReasoningEngine with a reference to a KnowledgeBase.
+        """Initializes the ReasoningEngine with a reference to a KnowledgeBase.
 
         Args:
             knowledge_base (KnowledgeBase): The knowledge base to reason over.
@@ -18,8 +18,14 @@ class ReasoningEngine:
         self.kb = knowledge_base
 
     def execute_query(self, parsed_query: dict) -> list:
-        """
-        Executes a structured query against the knowledge base.
+        """Executes a structured query against the knowledge base.
+
+        This method takes a structured query from the PerceptionModule and
+        returns a list of results. The reasoning process depends on the type
+        of query. For 'is_a' queries, it performs a breadth-first search to
+        find all supertypes of a given subject. For 'has_part' queries, it
+        finds all parts of a subject, including inherited parts from its
+        supertypes.
 
         Args:
             parsed_query (dict): The structured query from the PerceptionModule.

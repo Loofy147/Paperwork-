@@ -6,12 +6,14 @@ This project is a Python-based prototype of a Causal-Symbolic AI (CSAI) system d
 
 The CSAI system is designed to answer commonsense questions by combining a structured knowledge base with a logical inference engine. It is a departure from purely statistical, large-scale language models, and a step towards a more hybrid approach to AI that can reason about the world in a more structured and causal way.
 
-The system is composed of four main modules:
+## Project Structure
 
-*   **Knowledge Base:** A graph-based database for storing commonsense knowledge.
-*   **Perception Module:** Translates natural language queries into a structured, machine-readable format.
-*   **Reasoning Engine:** Performs logical inference on the structured query.
-*   **Action Module:** Translates the reasoned output back into a natural language response.
+The system is composed of four main modules, each in its own subdirectory under `csai/`:
+
+*   **`knowledge_base`:** A graph-based database for storing commonsense knowledge. The `KnowledgeBase` class provides an interface for adding and querying nodes and edges in the graph.
+*   **`perception`:** Translates natural language queries into a structured, machine-readable format. The `PerceptionModule` uses regular expressions and `spacy` for lemmatization to parse user input.
+*   **`reasoning`:** Performs logical inference on the structured query. The `ReasoningEngine` traverses the knowledge graph to find answers to the user's questions.
+*   **`action`:** Translates the reasoned output back into a natural language response. The `ActionModule` generates human-readable sentences from the structured results.
 
 ## Setup and Installation
 
@@ -36,34 +38,32 @@ This will install `networkx`, `spacy`, `pytest`, and the `en_core_web_sm` model 
 
 ## Running the System
 
-The CSAI system can be run in two modes: as a single-execution script, or as an interactive REPL.
-
-### Single Execution
-
-To ask a single question, you can run the `csai/csai.py` file directly.
+To run the CSAI system, execute the `main.py` script from the root of the project.
 
 ```bash
-PYTHONPATH=. python3 csai/csai.py
+python3 main.py
 ```
 
-This will execute the default question in the `__main__` block and print the answer.
-
-### Interactive Mode (REPL)
-
-For a more interactive experience, you can run the `main.py` script. This will launch a Read-Eval-Print Loop (REPL) that allows you to ask multiple questions in a session.
-
-```bash
-PYTHONPATH=. python3 main.py
-```
-
-You can then type your questions at the prompt. To exit, type `exit`.
+This will launch a Read-Eval-Print Loop (REPL) that allows you to ask multiple questions in a session. You can then type your questions at the prompt. To exit, type `exit`.
 
 ## Running the Tests
 
 The project includes a comprehensive test suite using `pytest`. To run the tests, execute the following command from the root of the project:
 
 ```bash
-PYTHONPATH=. pytest tests/test_csai.py
+PYTHONPATH=. pytest tests/
 ```
 
 This will discover and run all the tests in the `tests` directory and report the results.
+
+## Contributing
+
+Contributions are welcome! If you would like to contribute to the project, please fork the repository and submit a pull request.
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+## Contact
+
+For questions or feedback, please contact the development team at [developers@csai.com](mailto:developers@csai.com).
