@@ -1,5 +1,6 @@
 from csai.knowledge_base.knowledge_base import KnowledgeBase
 
+
 class ReasoningEngine:
     """Performs logical inference on a structured query using a knowledge base.
 
@@ -28,7 +29,8 @@ class ReasoningEngine:
         supertypes.
 
         Args:
-            parsed_query (dict): The structured query from the PerceptionModule.
+            parsed_query (dict): The structured query from the
+                PerceptionModule.
 
         Returns:
             list: A list of results that satisfy the query. The format of the
@@ -58,7 +60,8 @@ class ReasoningEngine:
             inferred_types.remove(subject)
 
             if parsed_query["type"] == "is_a_specific":
-                return [t for t in inferred_types if t == parsed_query["target"]]
+                target = parsed_query["target"]
+                return [t for t in inferred_types if t == target]
             else:
                 return sorted(list(inferred_types))
 

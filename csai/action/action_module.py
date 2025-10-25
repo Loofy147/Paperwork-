@@ -8,19 +8,20 @@ class ActionModule:
     """
 
     def generate_response(self, parsed_query: dict, results: list) -> str:
-        """Generates a natural language response from a parsed query and a list of results.
+        """Generates a natural language response from a parsed query and a list
+        of results.
 
-        This method takes the original structured query and the results from the
-        ReasoningEngine and constructs a human-readable response. The response
-        format is determined by the query type and the results.
+        This method takes the original structured query and the results from
+        the ReasoningEngine and constructs a human-readable response. The
+        response format is determined by the query type and the results.
 
         Args:
             parsed_query (dict): The original structured query from the
                 PerceptionModule. This dictionary contains details about the
-                question being asked, such as the subject and the type of query.
+                question being asked, such as the subject and type of query.
             results (list): The list of results from the ReasoningEngine. This
-                list contains the answers to the query, which will be formatted
-                into a natural language response.
+                list contains the answers to the query, which will be
+                formatted into a natural language response.
 
         Returns:
             str: A human-readable, natural language response that answers the

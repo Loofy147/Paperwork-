@@ -1,7 +1,9 @@
 import networkx as nx
 
+
 class KnowledgeBase:
-    """A graph-based knowledge base for storing and retrieving commonsense knowledge.
+    """A graph-based knowledge base for storing and retrieving commonsense
+    knowledge.
 
     This class uses a networkx DiGraph to represent the knowledge base, where
     nodes are concepts and edges are relationships between them. It provides
@@ -82,5 +84,6 @@ class KnowledgeBase:
         return [
             (u, v, d['label'])
             for u, v, d in self.graph.edges(data=True)
-            if (source_id is None or u == source_id) and (label is None or d['label'] == label)
+            if (source_id is None or u == source_id) and
+               (label is None or d['label'] == label)
         ]

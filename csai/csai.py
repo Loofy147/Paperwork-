@@ -1,8 +1,11 @@
 import json
+import sys
+
 from csai.knowledge_base.knowledge_base import KnowledgeBase
 from csai.perception.perception import PerceptionModule
 from csai.reasoning.reasoning_engine import ReasoningEngine
 from csai.action.action_module import ActionModule
+
 
 class CSAISystem:
     """The main Causal-Symbolic AI system.
@@ -27,7 +30,8 @@ class CSAISystem:
         self.perception = PerceptionModule()
         self.reasoning = ReasoningEngine(self.kb)
         self.action = ActionModule()
-        self._load_kb(knowledge_base_path)
+        if not self._load_kb(knowledge_base_path):
+            sys.exit(1)
 
     def _load_kb(self, path: str):
         """Loads the knowledge base from a JSON file.
@@ -38,14 +42,25 @@ class CSAISystem:
         Args:
             path (str): The path to the JSON knowledge base file.
         """
-        with open(path, 'r') as f:
-            data = json.load(f)
-
-        for node in data["nodes"]:
-            self.kb.add_node(node["id"], **node["properties"])
-
-        for edge in data["edges"]:
-            self.kb.add_edge(edge["source"], edge["target"], edge["label"])
+        try:
+            with open(path, 'r') as f:
+                data = json.load(f)
+            for node in data["nodes"]:
+                self.kb.add_node(node["id"], **node["properties"])
+            for edge in data["edges"]:
+                self.kb.add_edge(edge["source"],
+                                 edge["target"],
+                                 edge["label"])
+            return True
+        except FileNotFoundError:
+            print(f"Error: Knowledge base file not found at '{path}'")
+            return False
+        except json.JSONDecodeError:
+            print(f"Error: Could not decode JSON from '{path}'")
+            return False
+        except KeyError as e:
+            print(f"Error: Missing key in knowledge base file: {e}")
+            return False
 
     def ask(self, question: str) -> str:
         """Asks a question to the CSAI system.

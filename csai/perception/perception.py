@@ -1,8 +1,9 @@
 import re
 import spacy
 
+
 class PerceptionModule:
-    """Translates natural language queries into a structured, machine-readable format.
+    """Translates natural language queries into a structured format.
 
     This module uses a series of regular expressions to parse common question
     formats and convert them into a structured dictionary that can be used by
@@ -37,17 +38,18 @@ class PerceptionModule:
             text (str): The natural language query to parse.
 
         Returns:
-            dict or None: A dictionary representing the structured query,
-                          or None if the query does not match any known patterns.
-                          The dictionary contains the query type and its
-                          parameters.
+            A dictionary representing the structured query, or None if
+            the query does not match any known patterns. The dictionary
+            contains the query type and its parameters.
         """
         text = text.lower().strip()
 
         # Pattern 1: "What type of [Target] is a/an [Subject]?"
         match = re.match(r"what type of ([\w_]+) is (?:a|an) ([\w_]+)\??", text)
         if match:
-            return {"type": "is_a_specific", "subject": match.group(2), "target": match.group(1)}
+            return {"type": "is_a_specific",
+                    "subject": match.group(2),
+                    "target": match.group(1)}
 
         # Pattern 2: "What is a/an [Subject]?"
         match = re.match(r"what is (?:a|an) ([\w_]+)\??", text)
@@ -57,11 +59,16 @@ class PerceptionModule:
         # Pattern 3: "What [Property] is a/an [Subject]?"
         match = re.match(r"what ([\w_]+) is (?:a|an) ([\w_]+)\??", text)
         if match:
-            return {"type": "has_property", "subject": match.group(2), "property": self.nlp(match.group(1))[0].lemma_}
+            prop = self.nlp(match.group(1))[0].lemma_
+            return {"type": "has_property",
+                    "subject": match.group(2),
+                    "property": prop}
 
         # Pattern 4: "Does a [Subject] have [Part]?"
         match = re.match(r"does (?:a|an) ([\w_]+) have ([\w_]+)\??", text)
         if match:
-            return {"type": "has_part", "subject": match.group(1), "part": match.group(2)}
+            return {"type": "has_part",
+                    "subject": match.group(1),
+                    "part": match.group(2)}
 
         return None

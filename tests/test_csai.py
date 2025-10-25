@@ -49,3 +49,15 @@ def test_new_animal_is_a(csai_system):
     assert "cat" in response
     assert "living_thing" in response
     assert "mammal" in response
+
+def test_unknown_subject(csai_system):
+    response = csai_system.ask("What color is a spaceship?")
+    assert "I'm sorry" in response
+
+def test_unknown_property(csai_system):
+    response = csai_system.ask("What speed is a canary?")
+    assert "I'm sorry" in response
+
+def test_unicode_query(csai_system):
+    response = csai_system.ask("What color is a lämmergeier?")
+    assert "I'm sorry" in response
