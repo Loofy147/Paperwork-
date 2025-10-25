@@ -9,8 +9,12 @@ from csai.csai import CSAISystem
 from csai.dialogue.dialogue_manager import DialogueState
 
 def main():
-    """
-    An interactive Read-Eval-Print Loop (REPL) for the CSAISystem.
+    """An interactive Read-Eval-Print Loop (REPL) for the CSAISystem.
+
+    This function provides a command-line interface for interacting with the
+    CSAI system. It allows users to ask questions and receive answers in a
+    conversational manner. The REPL continues until the user types 'exit' or
+    presses Ctrl+C.
     """
     csai = CSAISystem()
     print("="*50)

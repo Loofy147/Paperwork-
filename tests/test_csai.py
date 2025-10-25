@@ -50,6 +50,17 @@ def test_new_animal_is_a(csai_system):
     assert "living_thing" in response
     assert "mammal" in response
 
+def test_unknown_subject(csai_system):
+    response = csai_system.ask("What color is a spaceship?")
+    assert "I'm sorry" in response
+
+def test_unknown_property(csai_system):
+    response = csai_system.ask("What speed is a canary?")
+    assert "I'm sorry" in response
+
+def test_unicode_query(csai_system):
+    response = csai_system.ask("What color is a lämmergeier?")
+    assert "I'm sorry" in response
 def test_counterfactual_query_change(csai_system):
     response = csai_system.ask("What would happen to the wet grass if it had not rained?")
     assert "If it had not rained, the wet grass would still have occurred, but it would only be caused by sprinkler." in response
