@@ -1,5 +1,6 @@
 import re
 import spacy
+import sys
 
 
 class PerceptionModule:
@@ -15,19 +16,18 @@ class PerceptionModule:
         """Initializes the PerceptionModule and loads the spacy model.
 
         This constructor loads the `en_core_web_sm` spacy model, which is used
-        for lemmatization. If the model is not found, it is automatically
-        downloaded. The parser and named entity recognizer are disabled to
-        improve performance.
+        for lemmatization. If the model is not found, it prints an error
+        message and exits.
         """
-    def __init__(self, knowledge_base):
-        """Initializes the PerceptionModule and loads the spacy model."""
-        self.kb = knowledge_base
         try:
             self.nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
         except OSError:
-            from spacy.cli import download
-            download("en_core_web_sm")
-            self.nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
+            print(
+                "Error: Spacy model 'en_core_web_sm' not found. "
+                "Please run 'python -m spacy download en_core_web_sm' "
+                "to download it."
+            )
+            sys.exit(1)
 
     def parse_query(self, text):
         """Parses a natural language query into a structured dictionary.
@@ -46,74 +46,50 @@ class PerceptionModule:
             contains the query type and its parameters.
         """
         text = text.lower().strip()
+        parsers = [
+            self._parse_is_a_specific,
+            self._parse_is_a_generic,
+            self._parse_has_property,
+            self._parse_has_part,
+        ]
+        for parser in parsers:
+            result = parser(text)
+            if result:
+                return result
+        return None
 
-        # Pattern 1: "What type of [Target] is a/an [Subject]?"
-        match = re.match(r"what type of ([\w_]+) is (?:a|an) ([\w_]+)\??", text)
+    def _parse_is_a_specific(self, text):
+        """Parses "What type of [Target] is a/an [Subject]?" queries."""
+        pattern = r"what type of ([\w_]+) is (?:a|an) ([\w_]+)\??"
+        match = re.match(pattern, text)
         if match:
             return {"type": "is_a_specific",
                     "subject": match.group(2),
                     "target": match.group(1)}
+        return None
 
-        # Pattern 2: "What is a/an [Subject]?"
+    def _parse_is_a_generic(self, text):
+        """Parses "What is a/an [Subject]?" queries."""
         match = re.match(r"what is (?:a|an) ([\w_]+)\??", text)
         if match:
             return {"type": "is_a_generic", "subject": match.group(1)}
+        return None
 
-        # Pattern 3: "What [Property] is a/an [Subject]?"
+    def _parse_has_property(self, text):
+        """Parses "What [Property] is a/an [Subject]?" queries."""
         match = re.match(r"what ([\w_]+) is (?:a|an) ([\w_]+)\??", text)
         if match:
             prop = self.nlp(match.group(1))[0].lemma_
             return {"type": "has_property",
                     "subject": match.group(2),
                     "property": prop}
+        return None
 
-        # Pattern 4: "Does a [Subject] have [Part]?"
+    def _parse_has_part(self, text):
+        """Parses "Does a [Subject] have [Part]?" queries."""
         match = re.match(r"does (?:a|an) ([\w_]+) have ([\w_]+)\??", text)
         if match:
             return {"type": "has_part",
                     "subject": match.group(1),
                     "part": match.group(2)}
-
-        # Pattern 5: "Why is the [Subject] [State]?"
-        match = re.match(r"why is the ([\w_]+) ([\w_]+)\??", text)
-        if match:
-            subject = match.group(1)
-            state = match.group(2)
-            event_id = f"{state}_{subject}"
-            return {"type": "causal_explanation", "event": event_id}
-
-        # Pattern 6: "What happened after the [event]?"
-        match = re.match(r"what happened after the ([\w_]+)\??", text)
-        if match:
-            event_name = match.group(1)
-            # Find the event in the KB that matches the name
-            for node_id, props in self.kb.graph.nodes(data=True):
-                if props.get("name") == event_name and props.get("type") == "event":
-                    return {"type": "temporal_question", "event": node_id}
-            return None # Event not found
-
-        # Pattern 7: "What would happen to the [target] if it had not [event]?"
-        match = re.match(r"what would happen to the ([\w\s]+) if it had not ([\w_]+)\??", text)
-        if match:
-            target_phrase = match.group(1).strip()
-            target_id = target_phrase.replace(" ", "_")
-            original_event = match.group(2)
-            lemmatized_event = self.nlp(original_event)[0].lemma_
-            return {
-                "type": "counterfactual",
-                "intervention": {
-                    "type": "remove_cause",
-                    "event": lemmatized_event,
-                    "original_event": original_event,
-                    "target_event": target_id
-                }
-            }
-
-        # Pattern 8: "plan for [goal]"
-        match = re.match(r"plan for ([\w\s]+)\??", text)
-        if match:
-            goal_phrase = match.group(1).strip()
-            goal_id = goal_phrase.replace(" ", "_")
-            return {"type": "plan", "goal": goal_id}
-
         return None

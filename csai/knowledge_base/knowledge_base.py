@@ -87,24 +87,3 @@ class KnowledgeBase:
             if (source_id is None or u == source_id) and
                (label is None or d['label'] == label)
         ]
-
-    def find_incoming_edges(self, target_id, label=None):
-        """
-        Finds incoming edges to a specific node.
-
-        Args:
-            target_id (str): The target node of the edges to find.
-            label (str, optional): The label of the edges to find. Defaults to None.
-
-        Returns:
-            list: A list of tuples, where each tuple represents an edge
-                  (source, target, label).
-        """
-        if not self.graph.has_node(target_id):
-            return []
-
-        return [
-            (u, v, d['label'])
-            for u, v, d in self.graph.in_edges(target_id, data=True)
-            if label is None or d['label'] == label
-        ]
